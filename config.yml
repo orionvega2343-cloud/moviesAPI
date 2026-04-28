@@ -1,0 +1,8 @@
+server:
+  port: 8080
+db:
+  name: movies
+  port: 5431
+  user: postgres
+  host: localhost
+  
