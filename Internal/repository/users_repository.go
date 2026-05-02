@@ -6,18 +6,26 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func CreateUser(db *sqlx.DB, u *models.Register) error {
+type UserRepo struct {
+	repo *sqlx.DB
+}
 
-	_, err := db.Exec(`INSERT INTO users (email, name, password) VALUES ($1, $2, $3)`, u.Email, u.Name, u.Password)
+func NewUserRepo(db *sqlx.DB) *UserRepo {
+	return &UserRepo{repo: db}
+}
+
+func (r *UserRepo) CreateUser(u *models.Register) error {
+
+	_, err := r.repo.Exec(`INSERT INTO users (email, name, password) VALUES ($1, $2, $3)`, u.Email, u.Name, u.Password)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetByEmail(db *sqlx.DB, l models.Login) (*models.Register, error) {
+func (r *UserRepo) GetByEmail(l models.Login) (*models.Register, error) {
 	user := &models.Register{}
-	err := db.QueryRow(`SELECT email,password FROM users WHERE email=$1`, l.Email).Scan(&user.Email, &user.Password)
+	err := r.repo.QueryRow(`SELECT id,email,password FROM users WHERE email=$1`, l.Email).Scan(&user.Id, &user.Email, &user.Password)
 	if err != nil {
 		return nil, err
 	}

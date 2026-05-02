@@ -6,19 +6,27 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-func CreateReviews(db *sqlx.DB, r models.Review) error {
-	_, err := db.Exec(`INSERT INTO reviews (user_id,movie_id,rating,text) VALUES ($1,$2,$3,$4)`, r.UserID, r.MovieID, r.Rating, r.Text)
+type ReviewsRepo struct {
+	repo *sqlx.DB
+}
+
+func NewReviewsRepo(db *sqlx.DB) *ReviewsRepo {
+	return &ReviewsRepo{repo: db}
+}
+
+func (r *ReviewsRepo) CreateReviews(a *models.Review) error {
+	_, err := r.repo.Exec(`INSERT INTO reviews (user_id,movie_id,rating,text) VALUES ($1,$2,$3,$4)`, a.UserID, a.MovieID, a.Rating, a.Text)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func GetReviewsById(db *sqlx.DB, id int) (models.Review, error) {
-	var r models.Review
-	err := db.QueryRow(`SELECT user_id,movie_id,rating,text FROM reviews WHERE id = $1`, id).Scan(&r.UserID, &r.MovieID, &r.Rating, &r.Text)
+func (r *ReviewsRepo) GetReviewsById(id int) (*models.Review, error) {
+	var a models.Review
+	err := r.repo.QueryRow(`SELECT user_id,movie_id,rating,text FROM reviews WHERE id = $1`, id).Scan(&a.UserID, &a.MovieID, &a.Rating, &a.Text)
 	if err != nil {
-		return r, err
+		return nil, err
 	}
-	return r, nil
+	return &a, nil
 }
